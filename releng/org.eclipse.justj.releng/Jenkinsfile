@@ -21,7 +21,7 @@ pipeline {
         echo 'Setting up environment...'
         ls -R releng
         '''
-        stash includes: 'releng/org.eclipse.justj.releng', name: 'releng-stash'
+        stash includes: 'releng/org.eclipse.justj.releng/**', name: 'releng-stash'
       }
     }
 
