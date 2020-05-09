@@ -102,14 +102,14 @@ pipeline {
             mv justj-transformed.jregen justj.jregen
             mvn clean verify
           '''
-          archiveArtifacts 'gen-openjdk/'
+          archiveArtifacts '*-gen/'
         }
       }
     }
 
     stage('Build JRE p2 Repository') {
       steps {
-        dir('model/org.eclipse.justj.model/gen-openjdk') {
+        dir('model/org.eclipse.justj.model/jre-gen') {
           sh '''
             mvn clean verify
           '''
