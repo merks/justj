@@ -89,8 +89,10 @@ pipeline {
         }
       }
     }
+*/
   }
 
+/*
   post {
     failure {
       mail to: 'ed.merks@gmail.com',
