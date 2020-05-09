@@ -57,27 +57,31 @@ pipeline {
           }
         }
 
-/*
         stage('MacOS') {
           agent { label 'macos' }
-            steps {
-              cleanWs()
-              sh '''
-                eval "$BUILD_JRE_SCRIPT"
-                '''
-              archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-              stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
-            }
+          options { skipDefaultCheckout true }
+          steps {
+            cleanWs()
+            sh '''
+            releng/org.eclipse.justj.releng/test.sh
+            '''
+//          stash includes: '*.result', name: 'mac-stash'
+//            sh '''
+//               eval "$BUILD_JRE_SCRIPT"
+//              '''
+//            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
+//            stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
+          }
         }
-*/
       }
     }
 
     stage('Compose Results') {
       steps {
-        // unstash 'mac-stash'
+        unstash 'mac-stash'
         unstash 'win-stash'
         sh 'ls *.result'
+        archiveArtifacts '*.result'
         /*
         sh 'ls -al org.eclipse.justj.*.tar.gz'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
