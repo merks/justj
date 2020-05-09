@@ -53,7 +53,7 @@ pipeline {
 //              '''
 //            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
 //            stash includes: '*org.eclipse.justj.*.tar.gz', name: 'win-stash'
-           stash includes: '*.result', name: 'win-stash'
+            stash includes: '*.result', name: 'win-stash'
           }
         }
 
@@ -66,6 +66,7 @@ pipeline {
             sh '''
             releng/org.eclipse.justj.releng/test.sh
             '''
+            stash includes: '*.result', name: 'mac-stash'
 //          stash includes: '*.result', name: 'mac-stash'
 //            sh '''
 //               eval "$BUILD_JRE_SCRIPT"
