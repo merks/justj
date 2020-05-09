@@ -20,6 +20,7 @@ pipeline {
         sh '''
         echo 'Setting up environment...'
         ls -R releng
+        chmod +x releng/org.eclipse.justj.releng/*.sh
         '''
         stash includes: 'releng/org.eclipse.justj.releng/**', name: 'releng-stash'
       }
@@ -39,6 +40,7 @@ pipeline {
         }
         stage('Windows') {
           agent { label 'windows' }
+          options { skipDefaultCheckout true }
           steps {
             cleanWs()
             unstash 'releng-stash'
