@@ -71,6 +71,8 @@ pipeline {
         unstash 'win-stash'
         sh 'ls org.eclipse.justj.*.tar.gz'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
+        archiveArtifacts 'org.eclipse.justj.*.tar.gz'
+        archiveArtifacts 'justj.manifest'
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
             TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
