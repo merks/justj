@@ -28,10 +28,10 @@ pipeline {
       }
     }
 
-    stage('Build JRE') {
+    stage('Build JREs') {
       parallel {
 
-        stage('Linux') {
+        stage('Build Linux JRES') {
           steps {
             sh '''
             releng/org.eclipse.justj.releng/build-jre.sh
@@ -39,7 +39,7 @@ pipeline {
           }
         }
 
-        stage('Windows') {
+        stage('Build Windows JREs') {
           agent { label 'windows' }
           options { skipDefaultCheckout true }
           steps {
@@ -52,7 +52,7 @@ pipeline {
           }
         }
 
-        stage('MacOS') {
+        stage('Build MacOS JREs') {
           agent { label 'macos' }
           options { skipDefaultCheckout true }
           steps {
@@ -67,7 +67,7 @@ pipeline {
       }
     }
 
-    stage('Compose Results') {
+    stage('Compose JREs') {
       steps {
         unstash 'mac-stash'
         unstash 'win-stash'
@@ -90,7 +90,11 @@ pipeline {
             "
             '''
         }
+      }
+    }
 
+    stage('Reconcile/Generate JRE Model') {
+      steps {
         dir('model/org.eclipse.justj.model') {
           sh '''
             sed 's/source=".*[.]manifest"/source="https:\\/\\/download.eclipse.org\\/justj\\/sandbox\\/jres\\/'$JUSTJ_BUILD_TIME_STAMP'\\/justj.manifest"/g' < justj.jregen > justj-transformed.jregen
@@ -100,7 +104,11 @@ pipeline {
           '''
           archiveArtifacts 'gen-openjdk/'
         }
+      }
+    }
 
+    stage('Build JRE p2 Repository') {
+      steps {
         dir('model/org.eclipse.justj.model/gen-openjdk') {
           sh '''
             mvn clean verify
