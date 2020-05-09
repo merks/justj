@@ -15,59 +15,68 @@ pipeline {
 */
 
   stages {
-    stage('Fan out') {
+    stage('Setup Environment') {
       steps {
         sh '''
-        echo 'Preparing common stuff...'
-        ls -sailR
-        pwd
+        echo 'Setting up environment...'
+        ls -R releng
         '''
+        stash includes: 'releng/org.eclipse.justj.releng', name: 'releng-stash'
       }
     }
 
-/*
     stage('Build JRE') {
       parallel {
 
         stage('Linux') {
           steps {
             sh '''
-            eval "$BUILD_JRE_SCRIPT"
-          '''
-          archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-        }
-      }
-
-      stage('Windows') {
-        agent { label 'windows' }
-        steps {
-          cleanWs()
-          bat '''
-            bash -ex -c "eval ""$BUILD_JRE_SCRIPT"""
+            releng/org.eclipse.justj.releng/test.sh
             '''
-          archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-          stash includes: '*org.eclipse.justj.*.tar.gz', name: 'win-stash'
-        }
-      }
-
-      stage('MacOS') {
-        agent { label 'macos' }
-          steps {
-            cleanWs()
-            sh '''
-              eval "$BUILD_JRE_SCRIPT"
-              '''
-            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-            stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
+            // archiveArtifacts '*.result'
+            // archiveArtifacts 'org.eclipse.justj.*.tar.gz'
           }
         }
+        stage('Windows') {
+          agent { label 'windows' }
+          steps {
+            cleanWs()
+            unstash 'releng-stash'
+            bat '''
+               bash -ex -c "ls -R"
+               bash -ex releng/org.eclipse.justj.releng/test.sh
+               '''
+//            bat '''
+//              bash -ex -c "eval ""$BUILD_JRE_SCRIPT"""
+//              '''
+//            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
+//            stash includes: '*org.eclipse.justj.*.tar.gz', name: 'win-stash'
+           stash includes: '*.result', name: 'win-stash'
+          }
+        }
+
+/*
+        stage('MacOS') {
+          agent { label 'macos' }
+            steps {
+              cleanWs()
+              sh '''
+                eval "$BUILD_JRE_SCRIPT"
+                '''
+              archiveArtifacts 'org.eclipse.justj.*.tar.gz'
+              stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
+            }
+        }
+*/
       }
     }
 
-    stage('Fan in') {
+    stage('Compose Results') {
       steps {
-        unstash 'mac-stash'
+        // unstash 'mac-stash'
         unstash 'win-stash'
+        sh 'ls *.result'
+        /*
         sh 'ls -al org.eclipse.justj.*.tar.gz'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
@@ -87,9 +96,9 @@ pipeline {
             "
             '''
         }
+        */
       }
     }
-*/
   }
 
 /*
