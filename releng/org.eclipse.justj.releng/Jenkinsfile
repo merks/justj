@@ -69,7 +69,6 @@ pipeline {
       steps {
         unstash 'mac-stash'
         unstash 'win-stash'
-        sh 'ls org.eclipse.justj.*.tar.gz'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         archiveArtifacts 'org.eclipse.justj.*.tar.gz'
         archiveArtifacts 'justj.manifest'
