@@ -62,6 +62,7 @@ pipeline {
           options { skipDefaultCheckout true }
           steps {
             cleanWs()
+            unstash 'releng-stash'
             sh '''
             releng/org.eclipse.justj.releng/test.sh
             '''
