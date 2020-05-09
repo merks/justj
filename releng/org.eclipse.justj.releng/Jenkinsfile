@@ -32,12 +32,11 @@ pipeline {
         stage('Linux') {
           steps {
             sh '''
-            releng/org.eclipse.justj.releng/test.sh
+            releng/org.eclipse.justj.releng/build-jre.sh
             '''
-            // archiveArtifacts '*.result'
-            // archiveArtifacts 'org.eclipse.justj.*.tar.gz'
           }
         }
+
         stage('Windows') {
           agent { label 'windows' }
           options { skipDefaultCheckout true }
@@ -45,15 +44,9 @@ pipeline {
             cleanWs()
             unstash 'releng-stash'
             bat '''
-               bash -ex -c "ls -R"
-               bash -ex releng/org.eclipse.justj.releng/test.sh
-               '''
-//            bat '''
-//              bash -ex -c "eval ""$BUILD_JRE_SCRIPT"""
-//              '''
-//            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-//            stash includes: '*org.eclipse.justj.*.tar.gz', name: 'win-stash'
-            stash includes: '*.result', name: 'win-stash'
+              bash -ex releng/org.eclipse.justj.releng/build-jre.sh
+              '''
+            stash includes: '*org.eclipse.justj.*.tar.gz', name: 'win-stash'
           }
         }
 
@@ -64,15 +57,9 @@ pipeline {
             cleanWs()
             unstash 'releng-stash'
             sh '''
-            releng/org.eclipse.justj.releng/test.sh
+            releng/org.eclipse.justj.releng/build-jre.sh
             '''
-            stash includes: '*.result', name: 'mac-stash'
-//          stash includes: '*.result', name: 'mac-stash'
-//            sh '''
-//               eval "$BUILD_JRE_SCRIPT"
-//              '''
-//            archiveArtifacts 'org.eclipse.justj.*.tar.gz'
-//            stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
+            stash includes: 'org.eclipse.justj.*.tar.gz', name: 'mac-stash'
           }
         }
       }
@@ -82,10 +69,7 @@ pipeline {
       steps {
         unstash 'mac-stash'
         unstash 'win-stash'
-        sh 'ls *.result'
-        archiveArtifacts '*.result'
-        /*
-        sh 'ls -al org.eclipse.justj.*.tar.gz'
+        sh 'ls org.eclipse.justj.*.tar.gz'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
@@ -104,12 +88,10 @@ pipeline {
             "
             '''
         }
-        */
       }
     }
   }
 
-/*
   post {
     failure {
       mail to: 'ed.merks@gmail.com',
@@ -127,5 +109,4 @@ pipeline {
       deleteDir()
     }
   }
-*/
 }
