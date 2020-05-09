@@ -156,7 +156,7 @@ echo "Vendor prefix: $vendor_prefix-$java_version-$jre_suffix"
 # These are the tuples for which we want to generate JREs.
 jres=(
 "$vendor_prefix.jre.base"             "JRE Base"                  java.base,java.xml    "--compress=2"
-"$vendor_prefix.jre.base.stripped"    "JRE Base Stripped"         java.base,java.xml    "-compress=2 $strip_debug"
+"$vendor_prefix.jre.base.stripped"    "JRE Base Stripped"         java.base,java.xml    "--compress=2 $strip_debug"
 "$vendor_prefix.jre.full"             "JRE Complete"              $all_modules          "--compress=2"
 "$vendor_prefix.jre.full.stripped"    "JRE Complete Stripped"     $all_modules          "--compress=2 $strip_debug"
 "$vendor_prefix.jre.minimal"          "JRE Minimal"               $simrel_modules       "--compress=2"
