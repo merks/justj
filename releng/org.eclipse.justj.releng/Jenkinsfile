@@ -7,12 +7,14 @@ pipeline {
     disableConcurrentBuilds()
   }
 
-/*
-  environment {
-    BUILD_JRE_SCRIPT = '''
-'''
+  tools {
+    maven 'apache-maven-latest'
+    jdk 'oracle-jdk8-latest'
   }
-*/
+
+  environment {
+    JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M%S').trim()
+  }
 
   stages {
     stage('Setup Environment') {
@@ -74,20 +76,38 @@ pipeline {
         archiveArtifacts 'justj.manifest'
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
-            TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
             ssh genie.justj@projects-storage.eclipse.org "
             ls -al /home/data/httpd/download.eclipse.org/justj/sandbox/jres
-            mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/$TIMESTAMP
+            mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
             "
 
-            scp justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/justj/sandbox/jres/$TIMESTAMP
+            scp justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
 
             ssh genie.justj@projects-storage.eclipse.org "
             mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
             cd /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
-            ls ../$TIMESTAMP/org.eclipse.justj.*.tar.gz > justj.manifest
+            ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
             "
             '''
+        }
+
+        dir('model/org.eclipse.justj.model') {
+          sh '''
+            sed 's/source=".*[.]manifest"/source="https:\\/\\/download.eclipse.org\\/justj\\/sandbox\\/jres\\/'$JUSTJ_BUILD_TIME_STAMP'\\/justj.manifest"/g' < justj.jregen > justj-transformed.jregen
+            cat justj-transformed.jregen
+            mv justj-transformed.jregen justj.jregen
+            mvn clean verify
+          '''
+          archiveArtifacts 'gen-openjdk/'
+        }
+
+        dir('model/org.eclipse.justj.model/gen-openjdk') {
+          sh '''
+            mvn clean verify
+          '''
+          dir('releng/org.eclipse.justj.site/target') {
+            archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+          }
         }
       }
     }
