@@ -76,7 +76,6 @@ pipeline {
           sh '''
             mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=https:/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
             '''
-          archiveArtifacts '*-gen/'
         }
 
         archiveArtifacts 'org.eclipse.justj.*.tar.gz'
