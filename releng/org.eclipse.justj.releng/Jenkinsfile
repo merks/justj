@@ -90,12 +90,13 @@ pipeline {
             mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
             "
 
-            scp justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
+            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
 
             ssh genie.justj@projects-storage.eclipse.org "
             mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
             cd /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
             ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
+            cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
             "
             '''
         }

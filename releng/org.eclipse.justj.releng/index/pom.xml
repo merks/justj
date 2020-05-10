@@ -27,6 +27,7 @@ SPDX-License-Identifier: EPL-2.0
     <justj.tools.repo>https://ci.eclipse.org/justj/job/build-tools/lastSuccessfulBuild/artifact/git/releng/org.eclipse.justj.tools.site/target/repository</justj.tools.repo>
     <eclipse.repo>https://download.eclipse.org/releases/2020-06</eclipse.repo>
     <justj.manifest.location>justj.manifest</justj.manifest.location>
+    <justj.manifest.url>justj.manifest</justj.manifest.url>
     <os-jvm-flags/>
   </properties>
 
@@ -84,7 +85,7 @@ SPDX-License-Identifier: EPL-2.0
             <phase>generate-sources</phase>
             <configuration>
               <argLine></argLine>
-              <appArgLine>-consoleLog -application org.eclipse.justj.codegen.jre.indexer -nosplash ${org.eclipse.justj.manifest.location} ${justj.manifest.url}</appArgLine>
+              <appArgLine>-consoleLog -application org.eclipse.justj.codegen.jre.indexer -nosplash ${justj.manifest.location} ${justj.manifest.url}</appArgLine>
             </configuration>
           </execution>
         </executions>
