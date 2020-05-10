@@ -74,7 +74,7 @@ pipeline {
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
-            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=https:/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
+            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=https://download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
             '''
         }
 
