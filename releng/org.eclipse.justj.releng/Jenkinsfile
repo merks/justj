@@ -72,8 +72,17 @@ pipeline {
         unstash 'mac-stash'
         unstash 'win-stash'
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
+        dir('releng/org.eclipse.justj.releng/index') {
+          sh '''
+            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=https:/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
+            '''
+          archiveArtifacts '*-gen/'
+        }
+
         archiveArtifacts 'org.eclipse.justj.*.tar.gz'
         archiveArtifacts 'justj.manifest'
+        archiveArtifacts 'index.html'
+
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
             ssh genie.justj@projects-storage.eclipse.org "
@@ -97,7 +106,7 @@ pipeline {
       steps {
         dir('model/org.eclipse.justj.model') {
           sh '''
-            sed 's/source=".*[.]manifest"/source="https:\\/\\/download.eclipse.org\\/justj\\/sandbox\\/jres\\/'$JUSTJ_BUILD_TIME_STAMP'\\/justj.manifest"/g' < justj.jregen > justj-transformed.jregen
+            sed 's%source=".*[.]manifest"%source="https://download.eclipse.org/justj/sandbox/jres/'$JUSTJ_BUILD_TIME_STAMP'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             cat justj-transformed.jregen
             mv justj-transformed.jregen justj.jregen
             mvn clean verify

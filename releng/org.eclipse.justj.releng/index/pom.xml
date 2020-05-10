@@ -16,7 +16,7 @@ SPDX-License-Identifier: EPL-2.0
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.eclipse.justj</groupId>
-  <artifactId>org.eclipse.justj.model</artifactId>
+  <artifactId>org.eclipse.justj.index</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
@@ -26,6 +26,7 @@ SPDX-License-Identifier: EPL-2.0
     <jarsigner-version>1.1.7</jarsigner-version>
     <justj.tools.repo>https://ci.eclipse.org/justj/job/build-tools/lastSuccessfulBuild/artifact/git/releng/org.eclipse.justj.tools.site/target/repository</justj.tools.repo>
     <eclipse.repo>https://download.eclipse.org/releases/2020-06</eclipse.repo>
+    <justj.manifest.location>justj.manifest</justj.manifest.location>
     <os-jvm-flags/>
   </properties>
 
@@ -39,14 +40,6 @@ SPDX-License-Identifier: EPL-2.0
       <url>https://repo.eclipse.org/content/repositories/cbi-releases</url>
     </pluginRepository>
   </pluginRepositories>
-
-  <repositories>
-    <repository>
-      <id>license-feature</id>
-      <url>http://download.eclipse.org/cbi/updates/license/</url>
-      <layout>p2</layout>
-    </repository>
-  </repositories>
 
   <build>
     <plugins>
@@ -84,25 +77,14 @@ SPDX-License-Identifier: EPL-2.0
         </configuration>
         <executions>
           <execution>
-            <id>reconcile</id>
+            <id>index</id>
             <goals>
               <goal>eclipse-run</goal>
             </goals>
             <phase>generate-sources</phase>
             <configuration>
               <argLine></argLine>
-              <appArgLine>-consoleLog -application org.eclipse.justj.codegen.reconciler -nosplash justj.jregen</appArgLine>
-            </configuration>
-          </execution>
-          <execution>
-            <id>generate</id>
-            <goals>
-              <goal>eclipse-run</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <argLine></argLine>
-              <appArgLine>-consoleLog -application org.eclipse.justj.codegen.generator -nosplash justj.jregen</appArgLine>
+              <appArgLine>-consoleLog -application org.eclipse.justj.codegen.jre.indexer -nosplash ${org.eclipse.justj.manifest.location} ${justj.manifest.url}</appArgLine>
             </configuration>
           </execution>
         </executions>
