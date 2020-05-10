@@ -120,7 +120,7 @@ pipeline {
       steps {
         dir('model/org.eclipse.justj.model/jre-gen') {
           sh '''
-            mvn clean verify
+            mvn -DPACK_AND_SIGN=true clean verify
           '''
           dir('releng/org.eclipse.justj.site/target') {
             archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
