@@ -14,6 +14,7 @@ pipeline {
 
   environment {
     JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M').trim()
+    PUBLISH_LOCATION = 'sandbox/jres/updates'
   }
 
   parameters {
@@ -184,12 +185,17 @@ pipeline {
 
     stage('Build JRE p2 Repository') {
       steps {
-        dir('model/org.eclipse.justj.model/jre-gen') {
-          sh '''
-            mvn -DPACK_AND_SIGN=true clean verify
-          '''
-          dir('releng/org.eclipse.justj.site/target') {
-            archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+        sshagent(['projects-storage.eclipse.org-bot-ssh']) {
+          dir('model/org.eclipse.justj.model/jre-gen') {
+            sh '''
+              if [[ $PROMOTE == false ]]; then
+                promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
+              fi
+              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$PUBLISH_LOCATION -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
+              '''
+            dir('releng/org.eclipse.justj.site/target') {
+              archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+            }
           }
         }
       }
