@@ -127,13 +127,15 @@ pipeline {
     }
 
     stage('Compose JREs') {
+      if (env.JRE_URL_MACOS != '') {
+        unstash 'mac-stash'
+      }
+
+      if (env.JRE_URL_WINDOWS != '') {
+        unstash 'win-stash'
+      }
+
       steps {
-        if (env.JRE_URL_MACOS != '') {
-          unstash 'mac-stash'
-        }
-        if (env.JRE_URL_WINDOWS != '') {
-          unstash 'win-stash'
-        }
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
