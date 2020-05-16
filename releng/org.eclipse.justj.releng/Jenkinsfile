@@ -70,8 +70,7 @@ pipeline {
 
         stage('Build Linux JRES') {
           when {
-            beforeAgent true
-            not { environment name: 'env.JRE_URL_LINUX', value: '' }
+            not { environment name: 'JRE_URL_LINUX', value: '' }
           }
           steps {
             sh '''
@@ -87,7 +86,7 @@ pipeline {
 
           when {
             beforeAgent true
-            not { environment name: 'env.JRE_URL_WINDOWS', value: '' }
+            not { environment name: 'JRE_URL_WINDOWS', value: '' }
           }
 
           options { skipDefaultCheckout true }
@@ -109,7 +108,7 @@ pipeline {
 
           when {
             beforeAgent true
-            not { environment name: 'env.JRE_URL_LINUX', value: '' }
+            not { environment name: 'JRE_URL_MACOS', value: '' }
           }
 
           options { skipDefaultCheckout true }
