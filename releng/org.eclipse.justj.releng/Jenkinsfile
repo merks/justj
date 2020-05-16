@@ -13,16 +13,37 @@ pipeline {
   }
 
   environment {
-    JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M%S').trim()
+    JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M').trim()
   }
 
   parameters {
+    string(
+      name: 'JRE_URL_WINDOWS', 
+      defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip', 
+      description: 'The URL to the Windows zip of a JDK')
+
+    string(
+      name: 'JRE_URL_MACOS', 
+      defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_osx-x64_bin.tar.gz', 
+      description: 'The URL to the MacOS tar.gz of a JDK')
+
+    string(
+      name: 'JRE_URL_LINUX', 
+      defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_linux-x64_bin.tar.gz', 
+      description: 'The URL to the Linix tar.gz of a JDK')
+
     choice(
       name: 'BUILD_TYPE',
       choices: ['nightly', 'milestone', 'release'],
       description: '''
         This is the description.
         ''')
+
+    booleanParam(
+      name: 'PROMOTE',
+      defaultValue: false,
+      description: 'Whether to promote the p2 repository to the download server.'
+    )
   }
 
   stages {
@@ -34,6 +55,12 @@ pipeline {
         chmod +x releng/org.eclipse.justj.releng/*.sh
         '''
         stash includes: 'releng/org.eclipse.justj.releng/**', name: 'releng-stash'
+        script {
+          env.JRE_URL_WINDOWS = JRE_URL_WINDOWS
+          env.JRE_URL_MACOS = JRE_URL_MACOS
+          env.JRE_URL_LINUX = JRE_URL_LINUX
+          env.BUILD_TYPE = params.BUILD_TYPE
+        }
       }
     }
 

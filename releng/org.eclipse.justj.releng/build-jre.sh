@@ -16,6 +16,9 @@ if [[ $OSTYPE == darwin* ]]; then
   strip_debug="--strip-debug"
   eclipse_root="Eclipse.app/Contents/Eclipse"
   eclipse_executable="Eclipse.app/Contents/Macos/eclipse"
+  if [[ -v JRE_URL_MACOS ]]; then
+    url=$JRE_URL_MACOS
+  fi
 elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   os=win
   jdk_suffix="_windows-x64_bin.zip"
@@ -27,6 +30,9 @@ elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   strip_debug="--strip-debug"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipsec.exe"
+  if [ -v JRE_URL_WINDOWS ]; then
+    url=$JRE_URL_WINDOWS
+  fi
 else
   os=linux
   jdk_suffix="_linux-x64_bin.tar.gz"
@@ -38,22 +44,30 @@ else
   strip_debug="--strip-java-debug-attributes"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipse"
+  if [[ -v JRE_URL_LINUX ]]; then
+    url=$JRE_URL_LINUX
+  fi
 fi
 
 echo "Processing for os=$os"
 
+# Use a default if the environment has not set the URL.
+#
+if [[ ! -v url ]]; then
+  url="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
+  #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.1_openj9-0.20.0/OpenJDK11U-jdk_x64_windows_openj9_11.0.7_10_openj9-0.20.0.zip"
+  #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.2/OpenJDK11U-jdk_x64_windows_hotspot_11.0.7_10.zip"
+fi
+
 # Download the os-specific JDK.
 #
-url="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
-#url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.1_openj9-0.20.0/OpenJDK11U-jdk_x64_windows_openj9_11.0.7_10_openj9-0.20.0.zip"
-#url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.2/OpenJDK11U-jdk_x64_windows_hotspot_11.0.7_10.zip"
 file=${url##*/}
 if [ ! -f $file ]; then
   echo "Downloading $url"
   curl -O -L -J $url
 fi
 
-# Download a os-specific version of Eclipse.
+# Download an os-specific version of Eclipse.
 #
 eclipse_url="https://www.eclipse.org/downloads/download.php?r=1&file=/eclipse/downloads/drops4/S-4.16M1-202004090200/eclipse-SDK-4.16M1$eclipse_suffix"
 eclipse_file=${eclipse_url##*/}
@@ -63,7 +77,7 @@ if [ ! -f $eclipse_file ]; then
   curl -O -L -J $eclipse_url
 fi
 
-# Extact the JDK; the folder name is expected to start with jdk-.
+# Extract the JDK; the folder name is expected to start with jdk-.
 #
 jdk="jdk-*"
 if [ ! -d $jdk ]; then
@@ -122,7 +136,7 @@ fi
 jdk_vm_arg="$jdk/$jdk_relative_vm_arg"
 [[ $os == mac ]] && jdk_vm_arg="$PWD/$jdk_vm_arg"
 
-# And then on Mac it messes up the user.dir so it can't find the build.xml.
+# And then on Mac the launch messes up the user.dir so it can't find the build.xml.
 # Also the PWD might contain spaces so we need "" when we use this variable, but then on Linux, an empty string argument is passed and that is used like a class name.
 # So always have an argument that might be useless.
 user_dir="-Dunused=unused"
@@ -189,7 +203,7 @@ for ((i=0; i<${#jres[@]}; i+=4)); do
       -Dorg.eclipse.justj.name=$jre_name \
       -Dorg.eclipse.justj.label="$jre_label" \
       -Dorg.eclipse.justj.modules=$modules \
-      -Dorg.eclipse.justj.args="$jlink_args" \
+      -Dorg.eclipse.justj.jlink.args="$jlink_args" \
       -Dorg.eclipse.justj.url.vendor="$vendor_url" \
       -Dorg.eclipse.justj.url.source="$url" |
     grep -E "^org.eclipse.just|^java.class.version|^java.runtime|^java.specification|^java.vendor|^java.version|^java.vm|^org.osgi.framework.system.capabilities|^org.osgi.framework.system.packages|^org.osgi.framework.version|^osgi.arch|^osgi.ws|^osgi.os" |
