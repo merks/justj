@@ -56,10 +56,11 @@ pipeline {
         '''
         stash includes: 'releng/org.eclipse.justj.releng/**', name: 'releng-stash'
         script {
-          env.JRE_URL_WINDOWS = JRE_URL_WINDOWS
-          env.JRE_URL_MACOS = JRE_URL_MACOS
-          env.JRE_URL_LINUX = JRE_URL_LINUX
+          env.JRE_URL_WINDOWS = params.JRE_URL_WINDOWS
+          env.JRE_URL_MACOS = params.JRE_URL_MACOS
+          env.JRE_URL_LINUX = params.JRE_URL_LINUX
           env.BUILD_TYPE = params.BUILD_TYPE
+          env.PROMOTE = params.PROMOTE
         }
       }
     }
