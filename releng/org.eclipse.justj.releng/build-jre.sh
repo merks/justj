@@ -16,7 +16,7 @@ if [[ $OSTYPE == darwin* ]]; then
   strip_debug="--strip-debug"
   eclipse_root="Eclipse.app/Contents/Eclipse"
   eclipse_executable="Eclipse.app/Contents/Macos/eclipse"
-  if [[ -v JRE_URL_MACOS ]]; then
+  if [[ "$JRE_URL_MACOS" != "" ]]; then
     url=$JRE_URL_MACOS
   fi
 elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
@@ -30,7 +30,7 @@ elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   strip_debug="--strip-debug"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipsec.exe"
-  if [ -v JRE_URL_WINDOWS ]; then
+  if [ "$JRE_URL_WINDOWS" != "" ]; then
     url=$JRE_URL_WINDOWS
   fi
 else
@@ -44,7 +44,7 @@ else
   strip_debug="--strip-java-debug-attributes"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipse"
-  if [[ -v JRE_URL_LINUX ]]; then
+  if [[ "$JRE_URL_LINUX" != "" ]]; then
     url=$JRE_URL_LINUX
   fi
 fi
@@ -53,7 +53,7 @@ echo "Processing for os=$os"
 
 # Use a default if the environment has not set the URL.
 #
-if [[ ! -v url ]]; then
+if [[ "$url" == "" ]]; then
   url="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
   #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.1_openj9-0.20.0/OpenJDK11U-jdk_x64_windows_openj9_11.0.7_10_openj9-0.20.0.zip"
   #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.2/OpenJDK11U-jdk_x64_windows_hotspot_11.0.7_10.zip"
