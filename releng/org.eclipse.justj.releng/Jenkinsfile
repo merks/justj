@@ -18,26 +18,26 @@ pipeline {
   }
 
   parameters {
-    string(
-      name: 'JRE_URL_WINDOWS',
+    text(
+      name: 'JDK_URLS_WINDOWS',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip',
-      description: 'The URL to the Windows zip of a JDK')
+      description: 'One or more URLs to a Windows zip of a JDK.')
 
-    string(
-      name: 'JRE_URL_MACOS',
+    text(
+      name: 'JDK_URLS_MACOS',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_osx-x64_bin.tar.gz',
-      description: 'The URL to the MacOS tar.gz of a JDK')
+      description: 'One or more URLs to a  MacOS tar.gz of a JDK.')
 
-    string(
-      name: 'JRE_URL_LINUX',
+    text(
+      name: 'JDK_URLS_LINUX',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_linux-x64_bin.tar.gz',
-      description: 'The URL to the Linix tar.gz of a JDK')
+      description: 'One or more URLs to a  Linux tar.gz of a JDK.')
 
     choice(
       name: 'BUILD_TYPE',
       choices: ['nightly', 'milestone', 'release'],
       description: '''
-        This is the description.
+        The type of build to produce.
         ''')
 
     booleanParam(
@@ -57,9 +57,9 @@ pipeline {
         '''
         stash includes: 'releng/org.eclipse.justj.releng/**', name: 'releng-stash'
         script {
-          env.JRE_URL_WINDOWS = params.JRE_URL_WINDOWS
-          env.JRE_URL_MACOS = params.JRE_URL_MACOS
-          env.JRE_URL_LINUX = params.JRE_URL_LINUX
+          env.JDK_URLS_WINDOWS = params.JDK_URLS_WINDOWS
+          env.JDK_URLS_MACOS = params.JDK_URLS_MACOS
+          env.JDK_URLS_LINUX = params.JDK_URLS_LINUX
           env.BUILD_TYPE = params.BUILD_TYPE
           env.PROMOTE = params.PROMOTE
         }
@@ -71,7 +71,7 @@ pipeline {
 
         stage('Build Linux JRES') {
           when {
-            not { environment name: 'JRE_URL_LINUX', value: '' }
+            not { environment name: 'JDK_URLS_LINUX', value: '' }
           }
           steps {
             sh '''
@@ -87,7 +87,7 @@ pipeline {
 
           when {
             beforeAgent true
-            not { environment name: 'JRE_URL_WINDOWS', value: '' }
+            not { environment name: 'JDK_URLS_WINDOWS', value: '' }
           }
 
           options { skipDefaultCheckout true }
@@ -109,7 +109,7 @@ pipeline {
 
           when {
             beforeAgent true
-            not { environment name: 'JRE_URL_MACOS', value: '' }
+            not { environment name: 'JDK_URLS_MACOS', value: '' }
           }
 
           options { skipDefaultCheckout true }
@@ -129,26 +129,15 @@ pipeline {
     stage('Compose JREs') {
       steps {
         script {
-          if (env.JRE_URL_MACOS != '') {
+          if (env.JDK_URLS_MACOS != '') {
             unstash 'mac-stash'
           }
     
-          if (env.JRE_URL_WINDOWS != '') {
+          if (env.JDK_URLS_WINDOWS != '') {
             unstash 'win-stash'
           }
-
-          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: '$(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
         }
 
-        sh ''' 
-          echo "JAVA_MAJOR_VERSION='$JAVA_MAJOR_VERSION'
-          if [[ $(echo $JAVA_MAJOR_VERSION | wc -w) == 1 ]]; then
-            echo "One Java major version."
-          else
-            echo "Inconsistent Java major versions."
-            exit 1
-          fi
-          ''' 
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''

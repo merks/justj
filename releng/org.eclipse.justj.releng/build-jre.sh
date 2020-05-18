@@ -16,8 +16,8 @@ if [[ $OSTYPE == darwin* ]]; then
   strip_debug="--strip-debug"
   eclipse_root="Eclipse.app/Contents/Eclipse"
   eclipse_executable="Eclipse.app/Contents/Macos/eclipse"
-  if [[ "$JRE_URL_MACOS" != "" ]]; then
-    url=$JRE_URL_MACOS
+  if [[ "$JDK_URLS_MACOS" != "" && $# != 0 ]]; then
+    urls=$JDK_URLS_MACOS
   fi
 elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   os=win
@@ -30,8 +30,8 @@ elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   strip_debug="--strip-debug"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipsec.exe"
-  if [ "$JRE_URL_WINDOWS" != "" ]; then
-    url=$JRE_URL_WINDOWS
+  if [[ "$JDK_URLS_WINDOWS" != "" && $# != 0 ]]; then
+    urls=$JDK_URLS_WINDOWS
   fi
 else
   os=linux
@@ -44,8 +44,8 @@ else
   strip_debug="--strip-java-debug-attributes"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipse"
-  if [[ "$JRE_URL_LINUX" != "" ]]; then
-    url=$JRE_URL_LINUX
+  if [[ "$JDK_URLS_LINUX" != "" && $# != 0 ]]; then
+    urls=$JDK_URLS_LINUX
   fi
 fi
 
@@ -53,11 +53,21 @@ echo "Processing for os=$os"
 
 # Use a default if the environment has not set the URL.
 #
-if [[ "$url" == "" ]]; then
-  url="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
-  #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.1_openj9-0.20.0/OpenJDK11U-jdk_x64_windows_openj9_11.0.7_10_openj9-0.20.0.zip"
-  #url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.2/OpenJDK11U-jdk_x64_windows_hotspot_11.0.7_10.zip"
+if [[ "$urls" == "" ]]; then
+  if [[ $# != 0 ]]; then
+    # We deliberately want to split on space because a URL should not have spaces.
+    urls=$@
+  else
+    urls="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
+    #urls="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.1_openj9-0.20.0/OpenJDK11U-jdk_x64_windows_openj9_11.0.7_10_openj9-0.20.0.zip"
+    #urls="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.7%2B10.2/OpenJDK11U-jdk_x64_windows_hotspot_11.0.7_10.zip"
+  fi
 fi
+
+# Loop over all URLs.
+for url in $urls; do
+
+echo "Processing '$url'"
 
 # Download the os-specific JDK.
 #
@@ -79,6 +89,7 @@ fi
 
 # Extract the JDK; the folder name is expected to start with jdk-.
 #
+rm -rf jdk-*
 jdk="jdk-*"
 if [ ! -d $jdk ]; then
   echo "Unpackaging $file"
@@ -169,23 +180,54 @@ echo "Vendor prefix: $vendor_prefix-$java_version-$jre_suffix"
 
 # These are the tuples for which we want to generate JREs.
 jres=(
-"$vendor_prefix.jre.base"             "JRE Base"                  java.base,java.xml    "--compress=2"
-"$vendor_prefix.jre.base.stripped"    "JRE Base Stripped"         java.base,java.xml    "--compress=2 $strip_debug"
-"$vendor_prefix.jre.full"             "JRE Complete"              $all_modules          "--compress=2"
-"$vendor_prefix.jre.full.stripped"    "JRE Complete Stripped"     $all_modules          "--compress=2 $strip_debug"
-"$vendor_prefix.jre.minimal"          "JRE Minimal"               $simrel_modules       "--compress=2"
-"$vendor_prefix.jre.minimal.stripped" "JRE Minimal Stripped"      $simrel_modules       "--compress=2 $strip_debug"
+
+"$vendor_prefix.jre.base"
+  "JRE Base"
+  "Provides the minimal modules needed to launch Equinox."
+  java.base,java.xml
+  "--compress=2"
+
+"$vendor_prefix.jre.base.stripped"
+  "JRE Base Stripped"
+  "Provides the minimal modules needed to launch Equinox, stripped of debug information."
+  java.base,java.xml
+  "--compress=2 $strip_debug"
+
+"$vendor_prefix.jre.full"
+  "JRE Complete"
+  "Provides the complete set of modules of the JDK, excluding incubators."
+  $all_modules
+  "--compress=2"
+
+"$vendor_prefix.jre.full.stripped"
+  "JRE Complete Stripped"
+  "Provides the complete set of modules of the JDK, excluding incubators, stripped of debug information."
+  $all_modules
+  "--compress=2 $strip_debug"
+
+"$vendor_prefix.jre.minimal"
+  "JRE Minimal"
+  "Provides the minimal modules needed to satisfy all of the bundles of the simultaneous release."
+  $simrel_modules
+  "--compress=2"
+
+"$vendor_prefix.jre.minimal.stripped"
+  "JRE Minimal Stripped"
+  "Provides the minimal modules needed to satisfy all of the bundles of the simultaneous release, stripped of debug information."
+  $simrel_modules
+  "--compress=2 $strip_debug"
 )
 
 # Iterate over the tuples.
-for ((i=0; i<${#jres[@]}; i+=4)); do
+for ((i=0; i<${#jres[@]}; i+=5)); do
 
   jre_name=${jres[i]}
   jre_label="$vendor_label ${jres[i+1]}"
+  jre_description="${jres[i+2]}"
   jre_folder="org.eclipse.justj.$jre_name-$java_version-$jre_suffix"
   rm -rf $jre_folder
-  modules=${jres[i+2]}
-  jlink_args=${jres[i+3]}
+  modules=${jres[i+3]}
+  jlink_args=${jres[i+4]}
 
   # Generate the JRE using jlink from the JDK.
   echo "Generating: $jre_folder"
@@ -202,6 +244,7 @@ for ((i=0; i<${#jres[@]}; i+=4)); do
       -Dorg.eclipse.justj.vm.arg="$jre_relative_vm_arg" \
       -Dorg.eclipse.justj.name=$jre_name \
       -Dorg.eclipse.justj.label="$jre_label" \
+      -Dorg.eclipse.justj.description="$jre_description" \
       -Dorg.eclipse.justj.modules=$modules \
       -Dorg.eclipse.justj.jlink.args="$jlink_args" \
       -Dorg.eclipse.justj.url.vendor="$vendor_url" \
@@ -214,4 +257,6 @@ for ((i=0; i<${#jres[@]}; i+=4)); do
   tar -cf ../$jre_folder.tar *
   tar -czf ../$jre_folder.tar.gz *
   cd -
+done
+
 done
