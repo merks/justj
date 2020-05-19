@@ -25,7 +25,7 @@ pipeline {
       defaultValue: '',
       description: '''
         Reuse an existing build of the JREs rather than building new ones.
-        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/''' + "${env.PUBLISH_LOCATION}" + '''" target="jres">jres</a>.
+        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres</a>.
         The JDK URLs specified below will be ignored in this case.
         ''')
 
@@ -214,7 +214,7 @@ pipeline {
             if [[ "$JUSTJ_MANIFEST_URL" == "" ]]; then
               sed 's%source=".*[.]manifest"%source="https://download.eclipse.org/justj/sandbox/jres/'$JUSTJ_BUILD_TIME_STAMP'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             else
-              sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL' < justj.jregen > justj-transformed.jregen
+              sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             fi
             cat justj-transformed.jregen
             mv justj-transformed.jregen justj.jregen
