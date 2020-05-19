@@ -158,8 +158,19 @@ pipeline {
           if (env.JDK_URLS_WINDOWS != '') {
             unstash 'win-stash'
           }
+
+          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: '$(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
         }
 
+        sh ''' 
+          echo "JAVA_MAJOR_VERSION='$JAVA_MAJOR_VERSION'
+          if [[ $(echo $JAVA_MAJOR_VERSION | wc -w) == 1 ]]; then
+            echo "One Java major version."
+          else
+            echo "Inconsistent Java major versions."
+            exit 1
+          fi
+          ''' 
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
