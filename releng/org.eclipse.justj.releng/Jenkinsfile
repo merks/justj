@@ -15,6 +15,8 @@ pipeline {
   environment {
     JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M').trim()
     PUBLISH_LOCATION = 'sandbox/jres/updates'
+    JUSTJ_URL = 'https://download.eclipse.org/justj'
+    JUSTJ_STORAGE_LOCATION = 'sandbox/jres/updates'
   }
 
   parameters {
@@ -23,7 +25,7 @@ pipeline {
       defaultValue: '',
       description: '''
         Reuse an existing build of the JREs rather than building new ones.
-        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/${env.PUBLISH_LOCATION}" target="jres">jres</a>.
+        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/''' + "${env.PUBLISH_LOCATION}" + '''" target="jres">jres</a>.
         The JDK URLs specified below will be ignored in this case.
         ''')
 
@@ -163,7 +165,7 @@ pipeline {
         }
 
         sh ''' 
-          echo "JAVA_MAJOR_VERSION='$JAVA_MAJOR_VERSION'
+          echo "JAVA_MAJOR_VERSION='$JAVA_MAJOR_VERSION'"
           if [[ $(echo $JAVA_MAJOR_VERSION | wc -w) == 1 ]]; then
             echo "One Java major version."
           else
