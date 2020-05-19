@@ -14,9 +14,9 @@ pipeline {
 
   environment {
     JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M').trim()
-    PUBLISH_LOCATION = 'sandbox/jres/updates'
+    PUBLISH_LOCATION_PREFIX = 'sandbox/jres'
     JUSTJ_URL = 'https://download.eclipse.org/justj'
-    JUSTJ_STORAGE_LOCATION = 'sandbox/jres/updates'
+    JUSTJ_STORAGE_LOCATION = '/home/data/httpd/download.eclipse.org/justj/'
   }
 
   parameters {
@@ -176,7 +176,7 @@ pipeline {
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
-            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=https://download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
+            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=$JUSTJ_URL/$JUSTJ_PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
             '''
         }
 
@@ -187,15 +187,15 @@ pipeline {
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
             ssh genie.justj@projects-storage.eclipse.org "
-            ls -al /home/data/httpd/download.eclipse.org/justj/sandbox/jres
-            mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
+            ls -al $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX
+            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP
             "
 
-            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/justj/sandbox/jres/$JUSTJ_BUILD_TIME_STAMP
+            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP
 
             ssh genie.justj@projects-storage.eclipse.org "
-            mkdir -p /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
-            cd /home/data/httpd/download.eclipse.org/justj/sandbox/jres/latest
+            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/latest
+            cd $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/latest
             ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
             cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
             "
@@ -212,7 +212,7 @@ pipeline {
           sh '''
             # Use the one we built just now or the one that was specified in the parameters.
             if [[ "$JUSTJ_MANIFEST_URL" == "" ]]; then
-              sed 's%source=".*[.]manifest"%source="https://download.eclipse.org/justj/sandbox/jres/'$JUSTJ_BUILD_TIME_STAMP'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
+              sed 's%source=".*[.]manifest"%source="'$JUSTJ_URL/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             else
               sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             fi
@@ -233,7 +233,7 @@ pipeline {
               if [[ $PROMOTE == false ]]; then
                 promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
               fi
-              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$PUBLISH_LOCATION -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
+              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$PUBLISH_LOCATION_PREFIX/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
             dir('releng/org.eclipse.justj.site/target') {
               archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
