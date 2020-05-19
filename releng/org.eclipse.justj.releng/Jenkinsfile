@@ -23,7 +23,7 @@ pipeline {
       defaultValue: '',
       description: '''
         Reuse an existing build of the JREs rather than building new ones.
-        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres</a>.
+        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/${env.PUBLISH_LOCATION}" target="jres">jres</a>.
         The JDK URLs specified below will be ignored in this case.
         ''')
 
@@ -159,7 +159,7 @@ pipeline {
             unstash 'win-stash'
           }
 
-          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: '$(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
+          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
         }
 
         sh ''' 
