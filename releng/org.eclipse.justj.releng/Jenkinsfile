@@ -162,7 +162,7 @@ pipeline {
           }
 
           // Look for the java.version property in each JRE's properties file, extract out just the major version, and those down to unique values.
-          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
+          env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9].*$//g"; done | sort -u)').trim()
           env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
           env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUST_JPUBLISH_LOCATION}/${env.JUSTJ_BUILD_TIME_STAMP}"
         }
@@ -191,8 +191,7 @@ pipeline {
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
             ssh genie.justj@projects-storage.eclipse.org "
-            ls -al $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION
-            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_JRE_PUBLISH_LOCATION_PREFIX
+            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_JRE_PUBLISH_LOCATION
             "
 
             scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLICATION_LOCATION
