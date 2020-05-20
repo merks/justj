@@ -22,11 +22,13 @@ pipeline {
   parameters {
     string(
       name: 'JUSTJ_MANIFEST_URL',
-      defaultValue: '',
+      defaultValue: 'https://download.eclipse.org/justj/sandbox/jres/14/downloads/latest/justj.manifest',
       description: '''
         Reuse an existing build of the JREs rather than building new ones.
-        Copy a justj.manifest link from an existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres/${java.version}/downloads/latest/justj.manifest</a>.
+        In general, copy a justj.manifest link from an existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres/${java.version}/downloads/latest/justj.manifest</a>.
         The JDK URLs specified below will be ignored in this case.
+        <br/>
+        <b>To build new JREs, clear this parameter field!<b>
         ''')
 
     text(
@@ -77,7 +79,7 @@ pipeline {
           env.BUILD_TYPE = params.BUILD_TYPE
           env.PROMOTE = params.PROMOTE
           if (params.JUSTJ_MANIFEST_URL != '') {
-            env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(basename $(dirname $(dirname $(dirname $url))))').trim()
+            env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(basename $(dirname $(dirname $(dirname $JUSTJ_MANIFEST_URL))))').trim()
             env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
           }
         }
