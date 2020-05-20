@@ -253,7 +253,6 @@ pipeline {
               if (params.BUILD_TYPE != 'release') {
                 dir('releng/org.eclipse.justj.site/target') {
                   archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
-                }
               }
             }
           }
