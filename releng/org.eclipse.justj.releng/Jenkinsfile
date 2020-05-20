@@ -34,17 +34,17 @@ pipeline {
     text(
       name: 'JDK_URLS_WINDOWS',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip',
-      description: 'One or more URLs to a Windows zip of a JDK from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
+      description: 'One or more URLs to a Windows zip of a JDK, e.g., from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
 
     text(
       name: 'JDK_URLS_MACOS',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_osx-x64_bin.tar.gz',
-      description: 'One or more URLs to a MacOS tar.gz of a JDK from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
+      description: 'One or more URLs to a MacOS tar.gz of a JDK, e.g., from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
 
     text(
       name: 'JDK_URLS_LINUX',
       defaultValue: 'https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_linux-x64_bin.tar.gz',
-      description: 'One or more URLs to a Linux tar.gz of a JDK from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
+      description: 'One or more URLs to a Linux tar.gz of a JDK, e.g., from <a href="https://jdk.java.net/" target="jdk">https://jdk.java.net/</a>.')
 
     choice(
       name: 'BUILD_TYPE',
