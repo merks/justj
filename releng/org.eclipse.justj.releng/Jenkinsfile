@@ -250,9 +250,9 @@ pipeline {
               fi
               mvn --no-transfer-progress $promotion_argument $extra_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
-              if (params.BUILD_TYPE != 'release') {
-                dir('releng/org.eclipse.justj.site/target') {
-                  archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+            if (params.BUILD_TYPE != 'release') {
+              dir('releng/org.eclipse.justj.site/target') {
+                archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
               }
             }
           }
