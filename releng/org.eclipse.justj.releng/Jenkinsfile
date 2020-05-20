@@ -196,7 +196,7 @@ pipeline {
             mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLISH_LOCATION
             "
 
-            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLICATION_LOCATION
+            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLISH_LOCATION
 
             ssh genie.justj@projects-storage.eclipse.org "
               mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
