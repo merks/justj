@@ -76,6 +76,11 @@ pipeline {
           env.JDK_URLS_LINUX = params.JDK_URLS_LINUX
           env.BUILD_TYPE = params.BUILD_TYPE
           env.PROMOTE = params.PROMOTE
+          if (params.JUSTJ_MANIFEST_URL != '') {
+            env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9].*$//g"; done | sort -u)').trim()
+            env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
+            env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUSTJ_PUBLISH_LOCATION}/downloads/${env.JUSTJ_BUILD_TIME_STAMP}"
+          }
         }
       }
     }
@@ -199,8 +204,8 @@ pipeline {
             scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLISH_LOCATION
 
             ssh genie.justj@projects-storage.eclipse.org "
-              mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
-              cd $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
+              mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/downloads/latest
+              cd $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/downloads/latest
               ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
               cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
               "
