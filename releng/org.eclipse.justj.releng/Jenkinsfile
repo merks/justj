@@ -25,7 +25,7 @@ pipeline {
       defaultValue: '',
       description: '''
         Reuse an existing build of the JREs rather than building new ones.
-        Copy a justj.manifest link from one of the existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres</a>.
+        Copy a justj.manifest link from an existing <a href="https://download.eclipse.org/justj/sandbox/jres/" target="jres">jres/${java.version}/downloads/latest/justj.manifest</a>.
         The JDK URLs specified below will be ignored in this case.
         ''')
 
@@ -77,9 +77,8 @@ pipeline {
           env.BUILD_TYPE = params.BUILD_TYPE
           env.PROMOTE = params.PROMOTE
           if (params.JUSTJ_MANIFEST_URL != '') {
-            env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9].*$//g"; done | sort -u)').trim()
+            env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(basename $(dirname $(dirname $(dirname $url))))').trim()
             env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
-            env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUSTJ_PUBLISH_LOCATION}/downloads/${env.JUSTJ_BUILD_TIME_STAMP}"
           }
         }
       }
@@ -224,7 +223,7 @@ pipeline {
             if [[ "$JUSTJ_MANIFEST_URL" == "" ]]; then
               sed 's%source=".*[.]manifest"%source="'$JUSTJ_URL/$JUSTJ_JRE_PUBLISH_LOCATION'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             else
-              sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
+              sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL'"%g' < justj.jregen > justj-transformed.jregen
             fi
             cat justj-transformed.jregen
             mv justj-transformed.jregen justj.jregen
@@ -243,7 +242,10 @@ pipeline {
               if [[ $PROMOTE == false ]]; then
                 promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
               fi
-              mvn --no-transfer-progress $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
+              if [[ $BUILD_TYPE == 'release' ]]; then
+                extra_argument='-DMAVEN_BUILD=false'
+              fi
+              mvn --no-transfer-progress $promotion_argument $extra_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
             dir('releng/org.eclipse.justj.site/target') {
               archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
