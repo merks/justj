@@ -200,7 +200,7 @@ pipeline {
 
             ssh genie.justj@projects-storage.eclipse.org "
               mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
-              cd $JUSTJ_STORAGE_LOCATION/$JUST_PUBLISH_LOCATION/latest
+              cd $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
               ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
               cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
               "
