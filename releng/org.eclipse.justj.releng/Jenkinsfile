@@ -182,7 +182,7 @@ pipeline {
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
-            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=$JUSTJ_URL/$JUSTJ_JRE_PUBLISH_LOCATION/justj.manifest clean verify
+            mvn --no-transfer-progress -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=$JUSTJ_URL/$JUSTJ_JRE_PUBLISH_LOCATION/justj.manifest clean verify
             '''
         }
 
@@ -223,7 +223,7 @@ pipeline {
             fi
             cat justj-transformed.jregen
             mv justj-transformed.jregen justj.jregen
-            mvn clean verify
+            mvn --no-transfer-progress clean verify
           '''
           archiveArtifacts '*-gen/'
         }
@@ -238,7 +238,7 @@ pipeline {
               if [[ $PROMOTE == false ]]; then
                 promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
               fi
-              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
+              mvn --no-transfer-progress $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
             dir('releng/org.eclipse.justj.site/target') {
               archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'

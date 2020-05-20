@@ -24,7 +24,7 @@ SPDX-License-Identifier: EPL-2.0
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <tycho-version>1.6.0</tycho-version>
     <jarsigner-version>1.1.7</jarsigner-version>
-    <justj.tools.repo>https://download.eclipse.org/justj/sandbox/tools/updates/nightly/latest</justj.tools.repo>
+    <justj.tools.repo>https://download.eclipse.org/justj/tools/updates/nightly/latest</justj.tools.repo>
     <eclipse.repo>https://download.eclipse.org/releases/2020-06</eclipse.repo>
     <os-jvm-flags/>
   </properties>
