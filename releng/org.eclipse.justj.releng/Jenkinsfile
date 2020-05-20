@@ -16,7 +16,7 @@ pipeline {
     JUSTJ_BUILD_TIME_STAMP = sh(returnStdout: true, script: 'date +%Y%m%d_%H%M').trim()
     PUBLISH_LOCATION_PREFIX = 'sandbox/jres'
     JUSTJ_URL = 'https://download.eclipse.org/justj'
-    JUSTJ_STORAGE_LOCATION = '/home/data/httpd/download.eclipse.org/justj/'
+    JUSTJ_STORAGE_LOCATION = '/home/data/httpd/download.eclipse.org/justj'
   }
 
   parameters {
@@ -161,10 +161,14 @@ pipeline {
             unstash 'win-stash'
           }
 
+          // Look for the java.version property in each JRE's properties file, extract out just the major version, and those down to unique values.
           env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9]*$//g"; done | sort -u)').trim()
+          env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
+          env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUST_JPUBLISH_LOCATION}/${env.JUSTJ_BUILD_TIME_STAMP}"
         }
 
         sh ''' 
+          # Check that there is only one major version present.
           echo "JAVA_MAJOR_VERSION='$JAVA_MAJOR_VERSION'"
           if [[ $(echo $JAVA_MAJOR_VERSION | wc -w) == 1 ]]; then
             echo "One Java major version."
@@ -176,7 +180,7 @@ pipeline {
         sh 'ls org.eclipse.justj.*.tar.gz > justj.manifest'
         dir('releng/org.eclipse.justj.releng/index') {
           sh '''
-            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=$JUSTJ_URL/$JUSTJ_PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP/justj.manifest clean verify
+            mvn -Djustj.manifest.location=../../../justj.manifest -Djustj.manifest.url=$JUSTJ_URL/$JUSTJ_JRE_PUBLISH_LOCATION/justj.manifest clean verify
             '''
         }
 
@@ -187,18 +191,18 @@ pipeline {
         sshagent(['projects-storage.eclipse.org-bot-ssh']) {
           sh '''
             ssh genie.justj@projects-storage.eclipse.org "
-            ls -al $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX
-            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP
+            ls -al $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION
+            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_JRE_PUBLISH_LOCATION_PREFIX
             "
 
-            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP
+            scp index.html justj.manifest org.eclipse.justj.*.tar.gz genie.justj@projects-storage.eclipse.org:$JUSTJ_STORAGE_LOCATION/$JUSTJ_JRE_PUBLICATION_LOCATION
 
             ssh genie.justj@projects-storage.eclipse.org "
-            mkdir -p $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/latest
-            cd $JUSTJ_STORAGE_LOCATION/$PUBLISH_LOCATION_PREFIX/latest
-            ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
-            cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
-            "
+              mkdir -p $JUSTJ_STORAGE_LOCATION/$JUSTJ_PUBLISH_LOCATION/latest
+              cd $JUSTJ_STORAGE_LOCATION/$JUST_PUBLISH_LOCATION/latest
+              ls ../$JUSTJ_BUILD_TIME_STAMP/org.eclipse.justj.*.tar.gz > justj.manifest
+              cp ../$JUSTJ_BUILD_TIME_STAMP/index.html .
+              "
             '''
         }
       }
@@ -212,7 +216,7 @@ pipeline {
           sh '''
             # Use the one we built just now or the one that was specified in the parameters.
             if [[ "$JUSTJ_MANIFEST_URL" == "" ]]; then
-              sed 's%source=".*[.]manifest"%source="'$JUSTJ_URL/$PUBLISH_LOCATION_PREFIX/$JUSTJ_BUILD_TIME_STAMP'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
+              sed 's%source=".*[.]manifest"%source="'$JUSTJ_URL/$JUSTJ_JRE_PUBLISH_LOCATION'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             else
               sed 's%source=".*[.]manifest"%source="'$JUSTJ_MANIFEST_URL'/justj.manifest"%g' < justj.jregen > justj-transformed.jregen
             fi
@@ -233,7 +237,7 @@ pipeline {
               if [[ $PROMOTE == false ]]; then
                 promotion_argument='-Dorg.eclipse.justj.p2.manager.args='
               fi
-              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$PUBLISH_LOCATION_PREFIX/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
+              mvn $promotion_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
             dir('releng/org.eclipse.justj.site/target') {
               archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
