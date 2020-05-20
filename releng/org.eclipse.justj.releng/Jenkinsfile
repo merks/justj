@@ -164,7 +164,7 @@ pipeline {
           // Look for the java.version property in each JRE's properties file, extract out just the major version, and those down to unique values.
           env.JAVA_MAJOR_VERSION = sh(returnStdout: true, script: 'echo $(for i in org.eclipse.justj.*.tar.gz; do tar -xOzf $i org.eclipse.justj.properties | grep "java.version=" | sed "s/^java.version=//g; s/[^0-9].*$//g"; done | sort -u)').trim()
           env.JUSTJ_PUBLISH_LOCATION = "${env.PUBLISH_LOCATION_PREFIX}/${env.JAVA_MAJOR_VERSION}"
-          env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUSTJ_JPUBLISH_LOCATION}/${env.JUSTJ_BUILD_TIME_STAMP}"
+          env.JUSTJ_JRE_PUBLISH_LOCATION = "${env.JUSTJ_PUBLISH_LOCATION}/${env.JUSTJ_BUILD_TIME_STAMP}"
         }
 
         sh ''' 
