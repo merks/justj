@@ -16,7 +16,7 @@ if [[ $OSTYPE == darwin* ]]; then
   strip_debug="--strip-debug"
   eclipse_root="Eclipse.app/Contents/Eclipse"
   eclipse_executable="Eclipse.app/Contents/Macos/eclipse"
-  if [[ "$JDK_URLS_MACOS" != "" && $# != 0 ]]; then
+  if [[ "$JDK_URLS_MACOS" != "" && $# == 0 ]]; then
     urls=$JDK_URLS_MACOS
   fi
 elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
@@ -30,7 +30,7 @@ elif [[ $OSTYPE == cygwin ||  $OSTYPE = msys ]]; then
   strip_debug="--strip-debug"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipsec.exe"
-  if [[ "$JDK_URLS_WINDOWS" != "" && $# != 0 ]]; then
+  if [[ "$JDK_URLS_WINDOWS" != "" && $# == 0 ]]; then
     urls=$JDK_URLS_WINDOWS
   fi
 else
@@ -44,7 +44,7 @@ else
   strip_debug="--strip-java-debug-attributes"
   eclipse_root="eclipse"
   eclipse_executable="eclipse/eclipse"
-  if [[ "$JDK_URLS_LINUX" != "" && $# != 0 ]]; then
+  if [[ "$JDK_URLS_LINUX" != "" && $# == 0 ]]; then
     urls=$JDK_URLS_LINUX
   fi
 fi
@@ -58,7 +58,7 @@ if [[ "$urls" == "" ]]; then
     # We deliberately want to split on space because a URL should not have spaces.
     urls=$@
   else
-    # Default to Java 14.
+    # Default to Java 14 Open JDK.
     urls="https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1$jdk_suffix"
   fi
 fi
