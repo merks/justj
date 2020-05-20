@@ -29,6 +29,7 @@ pipeline {
         The JDK URLs specified below will be ignored in this case.
         <br/>
         <b>To build new JREs, clear this parameter field!<b>
+        <b>To do a release build, ensure that this field specifies the ${java.version} to be released.<b>
         ''')
 
     text(
@@ -249,8 +250,11 @@ pipeline {
               fi
               mvn --no-transfer-progress $promotion_argument $extra_argument -DPACK_AND_SIGN=true -Dorg.eclipse.justj.p2.manager.build.url=$JOB_URL -Dorg.eclipse.justj.p2.manager.relative=$JUSTJ_PUBLISH_LOCATION/updates -Dbuild.type=$BUILD_TYPE -Dgit.commit=$GIT_COMMIT -Dbuild.id=$BUILD_NUMBER clean verify
               '''
-            dir('releng/org.eclipse.justj.site/target') {
-              archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+              if (params.BUILD_TYPE != 'release') {
+                dir('releng/org.eclipse.justj.site/target') {
+                  archiveArtifacts 'repository/,org.eclipse.justj.site*.zip'
+                }
+              }
             }
           }
         }
