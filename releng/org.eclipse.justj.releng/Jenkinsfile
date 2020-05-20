@@ -52,7 +52,7 @@ pipeline {
       description: '''
         The type of build to produce.
         A release build will not do a new build but rather will promote the most recent milestone build.
-        None of the values specified above are therefore relevant in this case.
+        None of the values specified above are therefore relevant in this case, <b>except that the Java version of the JUSTJ_MANIFEST_URL determines which update site will be released</b>.
         ''')
 
     booleanParam(
